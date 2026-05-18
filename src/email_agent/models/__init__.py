@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, UTC
 from enum import Enum
 from typing import Optional
 
@@ -82,7 +82,7 @@ class TriageResult(BaseModel):
     classification: Classification
     extracted: ExtractedInfo
     reply: ReplyDraft
-    processed_at: datetime = Field(default_factory=datetime.utcnow)
+    processed_at: datetime = Field(default_factory=lambda: datetime.now(datetime.UTC))
 
 
 # ── CRM Export ───────────────────────────────────────────────────────────────

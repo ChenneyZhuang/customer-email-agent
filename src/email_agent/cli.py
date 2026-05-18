@@ -82,7 +82,7 @@ def run_cmd(
 
     email = Email(
         id=email_id,
-        from_=from_,
+        from_address=from_,
         subject=subject,
         body=body_text,
     )
@@ -164,7 +164,7 @@ def batch(
     for i, row in enumerate(rows, 1):
         email = Email(
             id=row.get("id", f"batch-{i}"),
-            from_=row.get("from", row.get("from_address", "")),
+            from_address=row.get("from", row.get("from_address", "")),
             subject=row.get("subject", ""),
             body=row.get("body", ""),
         )
