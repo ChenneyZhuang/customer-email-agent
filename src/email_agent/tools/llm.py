@@ -54,6 +54,11 @@ class LLMClient:
         -------
         dict
             The decoded JSON response body from the API.
+
+        Raises
+        ------
+        RuntimeError
+            If the API returns a non-OK status or the response cannot be parsed as JSON.
         """
         payload: dict[str, Any] = {
             "model": self.model,
@@ -74,18 +79,30 @@ class LLMClient:
 
         data = resp.json()
         content: str = data["choices"][0]["message"]["content"]
-        # Try to parse JSON; fall back to raw string
+        # Parse JSON; raise if malformed
         try:
             return json.loads(content)
         except json.JSONDecodeError:
-            return {"raw": content}
+            raise RuntimeError(
+                f"LLM returned non-JSON response despite json_object format: {content[:200]}"
+            )
 
     def chat_raw(self, messages: list[dict[str, str]], **kwargs: Any) -> str:
-        """Return the raw text response from the API."""
-        result = self.chat(messages, **kwargs)
-        if "raw" in result:
-            return result["raw"]
-        return json.dumps(result, ensure_ascii=False)
+        """Return the raw text response from the API (no JSON parsing)."""
+        payload: dict[str, Any] = {
+            "model": self.model,
+            "messages": messages,
+            "temperature": kwargs.get("temperature", 0.2),
+            "max_tokens": kwargs.get("max_tokens", 2048),
+        }
+        with httpx.Client(timeout=60) as client:
+            resp = client.post(
+                f"{self.base_url}/chat/completions",
+                headers=self._headers(),
+                json=payload,
+            )
+            resp.raise_for_status()
+        return resp.json()["choices"][0]["message"]["content"]
 
 
 # Module-level convenience instance (requires .env to be loaded)
