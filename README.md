@@ -5,21 +5,21 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![Status: Alpha](https://img.shields.io/badge/Status-Alpha-orange.svg)]()
 
 ---
 
 ## ✨ What It Does
 
-Customer Email Agent is an open-source AI agent that helps small businesses handle
-incoming customer emails at scale. Instead of sifting through your inbox manually,
-let the agent do the first pass:
+Customer Email Agent helps small businesses handle incoming customer emails at scale.
+Instead of sifting through your inbox manually, let the agent do the first pass:
 
 | Step | What Happens |
 |------|-------------|
-| **1. Classify** | Categorises the email (quote enquiry, complaint, booking, support, or spam) using LLM inference |
+| **1. Classify** | Categorises the email (quote enquiry, complaint, booking, support, or spam) using LLM |
 | **2. Extract** | Pulls out structured details: customer name, need, location, urgency, key facts |
-| **3. Draft** | Generates a professional reply draft tailored to the category and tone |
-| **4. Export** | Writes everything to CSV / JSON for your CRM, Google Sheets, or database |
+| **3. Draft** | Generates a professional reply draft tailored to category and tone |
+| **4. Export** | Writes everything to CSV / JSON for CRM, Google Sheets, or database |
 
 **🧑‍⚖️ Human-in-the-loop** — replies are *drafted* but **never sent automatically**.
 Every draft requires human review before it reaches your customer.
@@ -36,13 +36,13 @@ Every draft requires human review before it reaches your customer.
 ### 1. Install
 
 ```bash
+# From GitHub
+pip install git+https://github.com/ChenneyZhuang/customer-email-agent.git
+
+# Or from source
+git clone https://github.com/ChenneyZhuang/customer-email-agent.git
+cd customer-email-agent
 pip install -e .
-```
-
-Or from PyPI (coming soon):
-
-```bash
-pip install email-agent
 ```
 
 ### 2. Configure
@@ -50,6 +50,12 @@ pip install email-agent
 ```bash
 cp .env.example .env
 # Edit .env and paste your DEEPSEEK_API_KEY
+```
+
+Or set it directly:
+
+```bash
+export DEEPSEEK_API_KEY="sk-..."
 ```
 
 ### 3. Run
@@ -121,7 +127,7 @@ customer-email-agent/
         │   ├── extractor.py          # Customer info extraction
         │   └── drafter.py            # Reply draft generation
         └── tools/
-            └── llm.py                # DeepSeek API client
+            └── llm.py                # DeepSeek API client (httpx)
 ```
 
 ---
@@ -152,6 +158,29 @@ customer-email-agent/
 Each agent is an independent module that calls the LLM with a specialised system
 prompt. Results flow through Pydantic models for type safety and serialisation.
 
+### Agent Details
+
+**Classifier** — Determines the email category with confidence score:
+- `quote_enquiry` — customer asking for price/estimate
+- `complaint` — unhappy about product/service
+- `booking` — wants to schedule/reserve
+- `support` — needs help/troubleshooting
+- `spam` — unsolicited/irrelevant
+
+**Extractor** — Pulls structured info from the email body:
+- Customer name (inferred from signature/greeting)
+- Primary need (one-sentence summary)
+- Location (if mentioned)
+- Urgency level (low/medium/high/critical)
+- Key facts (up to 5 bullet points)
+
+**Drafter** — Generates a category-specific reply:
+- Quote enquiry → thanks + asks for missing details + timeline
+- Complaint → acknowledges frustration + apologises + next steps
+- Booking → confirms availability + asks for preferred date/time
+- Support → provides troubleshooting steps or diagnostic questions
+- Spam → `NO_REPLY` marker (no draft generated)
+
 ---
 
 ## 🔧 CLI Reference
@@ -163,9 +192,9 @@ email-agent run \
   --from "customer@example.com" \
   --subject "Subject line" \
   --body "Email body text" \
-  --id "msg-001"                # optional, defaults to "cli-input"
-  --body-file email.txt         # alternative: read body from file
-  --json                        # output raw JSON instead of rich display
+  --id "msg-001"                # Optional, defaults to "cli-input"
+  --body-file email.txt         # Alternative: read body from file
+  --json                        # Output raw JSON instead of rich display
 ```
 
 ### `email-agent batch` — Process a CSV of emails
@@ -186,6 +215,32 @@ Print version and exit.
 
 ---
 
+## 🐍 Python API
+
+```python
+from email_agent.pipeline import run, export_csv, export_json
+from email_agent.models import Email
+
+email = Email(
+    id="msg-001",
+    from_address="customer@example.com",
+    subject="Need a quote",
+    body="Hi, can I get a quote for a website?",
+)
+
+result = run(email)
+
+print(result.classification.category)  # quote_enquiry
+print(result.extracted.customer_name)  # Customer Name
+print(result.reply.body)               # Drafted reply
+
+# Export to CRM
+csv_path = export_csv(result, email)
+json_path = export_json(result, email)
+```
+
+---
+
 ## 🧰 Configuration
 
 All settings via environment variables (or `.env` file):
@@ -193,16 +248,16 @@ All settings via environment variables (or `.env` file):
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
 | `DEEPSEEK_API_KEY` | **Yes** | — | Your DeepSeek API key |
-| `DEEPSEEK_BASE_URL` | No | `https://api.deepseek.com/v1` | API endpoint (supports OpenAI-compatible proxies) |
+| `DEEPSEEK_BASE_URL` | No | `https://api.deepseek.com/v1` | API endpoint (OpenAI-compatible) |
 | `DEEPSEEK_MODEL` | No | `deepseek-chat` | Model name |
 | `EMAIL_AGENT_OUTPUT_DIR` | No | `./output` | Directory for CSV/JSON exports |
 
 ---
 
-## 🧪 Development
+## 🧪 Testing
 
 ```bash
-# Install with dev dependencies
+# Install dev dependencies
 pip install -e ".[dev]"
 
 # Run linting
@@ -211,6 +266,19 @@ ruff check src/
 # Type checking
 mypy src/
 ```
+
+---
+
+## 🔌 Hermes Agent Integration
+
+This project ships with a `SKILL.md` for [Hermes Agent](https://hermes-agent.nousresearch.com/):
+
+```bash
+hermes skills install customer-email-agent
+```
+
+The skill teaches Hermes how to classify emails, extract customer info, draft replies,
+and export CRM data — using this exact package.
 
 ---
 
@@ -228,13 +296,10 @@ mypy src/
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please:
-
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create a feature branch
+3. Commit your changes
+4. Push and open a Pull Request
 
 ---
 
