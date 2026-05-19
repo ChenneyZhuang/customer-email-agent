@@ -62,6 +62,8 @@ def export_csv(result: TriageResult, email: Email, output_path: Optional[Path] =
     """
     if output_path is None:
         output_path = config.OUTPUT_DIR / "crm_export.csv"
+    else:
+        output_path = Path(output_path)
 
     record = CRMRecord.from_triage(result, email)
     file_exists = output_path.exists()
@@ -95,6 +97,8 @@ def export_json(result: TriageResult, email: Email, output_path: Optional[Path] 
     """
     if output_path is None:
         output_path = config.OUTPUT_DIR / f"{email.id}_triage.json"
+    else:
+        output_path = Path(output_path)
 
     data = {
         "email": email.model_dump(mode="json"),

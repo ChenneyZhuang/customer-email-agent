@@ -35,6 +35,8 @@ class Urgency(str, Enum):
 class Email(BaseModel):
     """Raw email received from a customer."""
 
+    model_config = {"populate_by_name": True}
+
     id: str = Field(description="Unique identifier for the email (Message-ID or similar)")
     from_address: str = Field(alias="from", description="Sender email address")
     subject: str = Field(default="", description="Email subject line")
@@ -82,7 +84,7 @@ class TriageResult(BaseModel):
     classification: Classification
     extracted: ExtractedInfo
     reply: ReplyDraft
-    processed_at: datetime = Field(default_factory=lambda: datetime.now(datetime.UTC))
+    processed_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 # ── CRM Export ───────────────────────────────────────────────────────────────
