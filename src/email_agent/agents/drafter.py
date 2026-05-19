@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from email_agent.models import (
-    Category,
     Classification,
     Email,
     ExtractedInfo,

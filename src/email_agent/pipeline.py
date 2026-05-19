@@ -8,7 +8,6 @@ from __future__ import annotations
 import csv
 import json
 from pathlib import Path
-from typing import Optional
 
 from email_agent import config
 from email_agent.agents import classify, draft_reply, extract
@@ -41,7 +40,7 @@ def run(email: Email) -> TriageResult:
     return result
 
 
-def export_csv(result: TriageResult, email: Email, output_path: Optional[Path] = None) -> Path:
+def export_csv(result: TriageResult, email: Email, output_path: Path | None = None) -> Path:
     """Export a triage result to CSV (CRM-ready format).
 
     Appends to the file if it already exists, writes a header otherwise.
@@ -77,7 +76,7 @@ def export_csv(result: TriageResult, email: Email, output_path: Optional[Path] =
     return output_path
 
 
-def export_json(result: TriageResult, email: Email, output_path: Optional[Path] = None) -> Path:
+def export_json(result: TriageResult, email: Email, output_path: Path | None = None) -> Path:
     """Export a full triage result to a pretty-printed JSON file.
 
     Parameters

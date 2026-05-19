@@ -10,9 +10,7 @@ from __future__ import annotations
 
 import csv
 import json
-import sys
 from pathlib import Path
-from typing import Optional
 
 import typer
 from rich.console import Console
@@ -67,7 +65,7 @@ def run_cmd(
     from_: str = typer.Option(..., "--from", help="Sender email address"),
     subject: str = typer.Option("", "--subject", help="Email subject"),
     body: str = typer.Option("", "--body", help="Plain-text email body"),
-    body_file: Optional[Path] = typer.Option(
+    body_file: Path | None = typer.Option(
         None, "--body-file", help="Read body from a text file"
     ),
     email_id: str = typer.Option("cli-input", "--id", help="Email identifier"),
@@ -137,7 +135,7 @@ def run_cmd(
 @app.command()
 def batch(
     csv_file: Path = typer.Argument(..., help="CSV with columns: id, from, subject, body"),
-    output: Optional[Path] = typer.Option(None, "--output", help="Output CSV file path"),
+    output: Path | None = typer.Option(None, "--output", help="Output CSV file path"),
 ) -> None:
     """Process multiple emails from a CSV file.
 

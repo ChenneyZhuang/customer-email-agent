@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
-from datetime import datetime, UTC
-from enum import Enum
-from typing import Optional
+from datetime import UTC, datetime
+from enum import StrEnum
 
 from pydantic import BaseModel, Field
-
 
 # ── Enums ────────────────────────────────────────────────────────────────────
 
 
-class Category(str, Enum):
+class Category(StrEnum):
     """Classification label for incoming customer emails."""
 
     QUOTE_ENQUIRY = "quote_enquiry"
@@ -22,7 +20,7 @@ class Category(str, Enum):
     SPAM = "spam"
 
 
-class Urgency(str, Enum):
+class Urgency(StrEnum):
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -41,7 +39,7 @@ class Email(BaseModel):
     from_address: str = Field(alias="from", description="Sender email address")
     subject: str = Field(default="", description="Email subject line")
     body: str = Field(default="", description="Plain-text email body")
-    received_at: Optional[datetime] = Field(default=None, description="When the email was received")
+    received_at: datetime | None = Field(default=None, description="When the email was received")
 
 
 # ── Agent Outputs ────────────────────────────────────────────────────────────

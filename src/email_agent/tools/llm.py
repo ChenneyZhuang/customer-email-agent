@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
@@ -35,7 +35,7 @@ class LLMClient:
         *,
         temperature: float = 0.2,
         max_tokens: int = 2048,
-        response_format: Optional[dict[str, Any]] = None,
+        response_format: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Send a chat completion request and return the parsed JSON response.
 
@@ -106,7 +106,7 @@ class LLMClient:
 
 
 # Module-level convenience instance (requires .env to be loaded)
-_client: Optional[LLMClient] = None
+_client: LLMClient | None = None
 
 
 def get_client() -> LLMClient:
