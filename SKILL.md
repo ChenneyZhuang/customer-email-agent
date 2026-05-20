@@ -37,10 +37,9 @@ email-agent batch emails.csv
 ### Python API
 
 ```python
-from email_agent.models import Email
-from email_agent.pipeline import run, export_csv, export_json
+from email_agent import Email, run, export_csv, export_json
 
-email = Email(id="msg-1", from_="alice@ex.com", subject="Quote", body="...")
+email = Email(id="msg-1", from_address="alice@ex.com", subject="Quote", body="...")
 result = run(email)
 csv_path = export_csv(result, email)
 json_path = export_json(result, email)
